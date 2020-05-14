@@ -1,4 +1,4 @@
-package com.raul.revolutcodetask.presentation
+package com.raul.revolutcodetask.presentation.activities
 
 import android.os.Bundle
 import android.view.View
@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.snackbar.Snackbar
 import com.raul.revolutcodetask.R
+import com.raul.revolutcodetask.domain.model.ErrorEntity
 import com.raul.revolutcodetask.domain.model.state.ScreenState
 import com.raul.revolutcodetask.presentation.adapter.RatesListAdapter
 import com.raul.revolutcodetask.presentation.interactor.MainViewModel
@@ -29,7 +30,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var adapter: RatesListAdapter
 
-    private val code = "CAD"
+    private var code = "CAD"
+    private var snackbar: Snackbar? = null
+    private var retries = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -71,6 +74,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun displayProducts(data: CountryCurrencies) {
+        code = data.baseCurrency
+        retries = 1
         adapter.setItems(data)
     }
 
@@ -78,11 +83,42 @@ class MainActivity : AppCompatActivity() {
         startShimmerEffect()
     }
 
-    private fun showError(throwable: Throwable) {
-        Snackbar.make(
-            mainview, throwable.message.toString(),
-            Snackbar.LENGTH_LONG
-        ).setAction("Action", null).show()
+    private fun showError(error: ErrorEntity) {
+        val errorMessage = when (error) {
+            is ErrorEntity.Network -> getString(R.string.network_error_message)
+            is ErrorEntity.ServiceUnavailable -> getString(R.string.noservice_error_message)
+            is ErrorEntity.Unknown -> getString(R.string.unknown_error_message)
+            is ErrorEntity.Cancellation -> ""
+            else -> getString(R.string.unknown_error_message)
+        }
+        if (errorMessage.isNotEmpty()) setSnackbar(errorMessage)
+    }
+
+    private fun setSnackbar(errorMessage: String) {
+        var composeMessageError = errorMessage
+        when (retries) {
+            in 1..2 -> composeMessageError =
+                String.format(getString(R.string.compose_error_message, errorMessage, retries))
+        }
+        if (snackbar == null) {
+            snackbar = Snackbar.make(
+                mainview, composeMessageError,
+                Snackbar.LENGTH_INDEFINITE
+            )
+            snackbar!!.show()
+        } else {
+            if (retries == 3) {
+                snackbar!!.setAction("Retry") {
+                    retries = 0
+                    showLoading()
+                    viewModel.initialize(code)
+                    snackbar!!.setAction("Action", null)
+                }.setText(composeMessageError).show()
+            } else {
+                snackbar!!.setText(composeMessageError).show()
+                retries++
+            }
+        }
     }
 
     private fun startShimmerEffect() {

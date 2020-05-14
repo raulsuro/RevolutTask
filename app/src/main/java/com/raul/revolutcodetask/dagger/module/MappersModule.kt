@@ -17,7 +17,6 @@ class MappersModule {
     fun provideNetworkToDomainProductMapper(): NetworkToDomainCurrenciesMapper =
         currenciesMapper
 
-
     @Inject
     fun provideNetworkToDomainCountriesMapper(): NetworkToDomainCountriesMapper =
         countriesMapper
@@ -25,6 +24,5 @@ class MappersModule {
     @Inject
     fun provideDomainToPresentationCountryCurrenciesMapper(): DomainToPresentationCountryCurrenciesMapper =
         countryCurrenciesMapper
-
 
 }

@@ -7,7 +7,6 @@ import com.raul.revolutcodetask.domain.usecase.GetRatesUseCase
 import com.raul.revolutcodetask.presentation.mapper.DomainToPresentationCountryCurrenciesMapper
 import com.raul.revolutcodetask.presentation.model.CountryCurrencies
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.resetMain
@@ -62,7 +61,6 @@ class MainViewModelTest {
     fun `initialize should invoke GetRatesUsecase execute`() {
         runBlocking {
             sut.initialize(code)
-            delay(2000)
             verify(useCaseRates).execute(code)
         }
     }

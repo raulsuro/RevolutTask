@@ -1,7 +1,9 @@
 package com.raul.revolutcodetask.dagger.module
 
+import com.raul.revolutcodetask.data.handler.ErrorHandlerImpl
 import com.raul.revolutcodetask.data.repository.GetCountryRepositoryImpl
 import com.raul.revolutcodetask.data.repository.GetRatesRepositoryImpl
+import com.raul.revolutcodetask.domain.handler.ErrorHandler
 import com.raul.revolutcodetask.domain.model.CountryInfo
 import com.raul.revolutcodetask.domain.model.Currencies
 import com.raul.revolutcodetask.domain.model.state.StateManager
@@ -38,5 +40,11 @@ class RatesSingletonModule {
     fun provideGetCountryRepository(
         repo: GetCountryRepositoryImpl
     ): GetCountryRepository = repo
+
+    @Provides
+    @Singleton
+    fun provideErrorHandler(
+        handler: ErrorHandlerImpl
+    ): ErrorHandler = handler
 
 }

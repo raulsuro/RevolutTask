@@ -2,7 +2,7 @@ package com.raul.revolutcodetask.presentation.adapter.listener
 
 import android.content.Context
 import android.view.View
-import com.raul.revolutcodetask.presentation.MainActivity
+import com.raul.revolutcodetask.presentation.activities.MainActivity
 import com.raul.revolutcodetask.presentation.model.RateView
 import javax.inject.Inject
 

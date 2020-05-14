@@ -7,15 +7,21 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.raul.revolutcodetask.data.mapper.NetworkToDomainCurrenciesMapper
 import com.raul.revolutcodetask.data.network.api.RatesApi
 import com.raul.revolutcodetask.data.network.model.RatesApiResponse
+import com.raul.revolutcodetask.domain.handler.ErrorHandler
 import com.raul.revolutcodetask.domain.model.Currencies
+import com.raul.revolutcodetask.domain.model.ErrorEntity
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import retrofit2.Response
+import java.io.IOException
 
 class GetRatesRepositoryImplTest {
+
+    @Mock
+    lateinit var errorHandler: ErrorHandler
 
     @Mock
     lateinit var ratesApi: RatesApi
@@ -32,12 +38,16 @@ class GetRatesRepositoryImplTest {
     @Mock
     lateinit var currencies: Currencies
 
+    lateinit var error: Throwable
+
+
     lateinit var sut: GetRatesRepositoryImpl
 
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        sut = GetRatesRepositoryImpl(ratesApi, mapper)
+        sut = GetRatesRepositoryImpl(ratesApi, mapper, errorHandler)
+        error = Throwable(IOException())
     }
 
     private val code = "EUR"
@@ -47,6 +57,7 @@ class GetRatesRepositoryImplTest {
         runBlocking {
             whenever(ratesApi.getRates(code)).thenReturn(responseRatesApiResponse)
             whenever(ratesApi.getRates(code).body()).thenReturn(ratesApiResponse)
+            whenever(errorHandler.getError(error)).thenReturn(ErrorEntity.Unknown)
 
             whenever(mapper.map(ratesApiResponse)).thenReturn(currencies)
 

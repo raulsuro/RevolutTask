@@ -3,6 +3,8 @@ package com.raul.revolutcodetask.presentation.interactor
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.raul.revolutcodetask.domain.model.CountryInfo
+import com.raul.revolutcodetask.domain.model.ErrorEntity
+import com.raul.revolutcodetask.domain.model.Output
 import com.raul.revolutcodetask.domain.model.state.ScreenState
 import com.raul.revolutcodetask.domain.model.state.StateManager
 import com.raul.revolutcodetask.domain.usecase.GetCountryUseCase
@@ -28,31 +30,45 @@ class MainViewModel @Inject constructor(
     var results: LiveData<ScreenState<CountryCurrencies>> = resultManager
 
     fun initialize(code: String) {
-        resultManager.loading()
         jobRunning?.let {
             if (it.isActive) it.cancel()
-        }
+        } ?: resultManager.loading()
+
         jobRunning = uiScope.launch {
-            try {
-                while (true) {
-                    val rates = useCaseRates.execute(code)
-                    if (countryList.isEmpty()) {
-                        rates.rate.forEach {
-                            countryList.add(useCaseCountry.execute(it.currency))
+            var retries = 0
+            while (retries < 4) {
+                when (val rates = useCaseRates.execute(code)) {
+                    is Output.Success -> {
+                        retries = 0
+                        if (countryList.isEmpty()) {
+                            rates.data.rate.map {
+                                when (val countries = useCaseCountry.execute(it.currency)) {
+                                    is Output.Success -> {
+                                        countryList.add(countries.data)
+                                        retries = 0
+                                    }
+                                    is Output.Error -> {
+                                        updateUi(countries.error)
+                                        retries++
+                                    }
+                                }
+                            }
                         }
+                        updateUi(mapper.map(rates.data, countryList))
                     }
-                    updateUi(mapper.map(rates, countryList))
-                    delay(1000)
+                    is Output.Error -> {
+                        updateUi(rates.error)
+                        retries++
+                    }
                 }
-            } catch (e: CancellationException) {
-            } catch (e: Exception) {
-                updateUi(e)
+                delay(1000)
             }
+
         }
     }
 
     private fun updateUi(response: Any) {
-        if (response is Throwable)
+        if (response is ErrorEntity)
             resultManager.error(response)
         else {
             resultManager.set(response as CountryCurrencies)

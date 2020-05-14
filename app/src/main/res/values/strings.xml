@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">RevolutCodeTask</string>
     <string name="rates">Rates</string>
+    <string name="network_error_message">Sorry couldn\'t connect, please check your network connection</string>
+    <string name="noservice_error_message">Service is not available</string>
+    <string name="unknown_error_message">Sorry, Data cannot be retrieved</string>
+    <string name="compose_error_message">"%1$s…reconnecting %2$d"</string>
 </resources>
