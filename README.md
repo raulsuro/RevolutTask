@@ -18,6 +18,7 @@ Android app that gets a list of rates and currencies and show them updated every
 - Coil for image loading
 - Unit tests (Mockito)
 - Data binding
+- Error handler for the network response different errors
 - State manager (loading, error, success)
 - Coroutines. I have always worked with RxJava but since coroutines are relatively new and promising I wanted to give them a try.
 - LiveData and ViewModel from Architecture Components
